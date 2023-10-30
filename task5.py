@@ -1,35 +1,44 @@
-import multiprocessing  
+from multiprocessing.pool import ThreadPool
 import os
 import requests
 from bs4 import BeautifulSoup 
 
+#the code doesn't work
+#will it work someday...
+"""
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
     "Referer": "https://www.bing.com/",
 }
 
-def download(src:str)->None:
-    response=requests.get(src)
-    numbers = format(range(0,1000)).zfill(4)
-    if not os.path.exists(f"dataset"):
-        os.mkdir(f"dataset")
-    with open(os.path.join("dataset",f"{numbers}.jpg","wb")) as f:
-        f.write(response.content)
-
 def create_list(urls:list)->list:
-    list=[]
-    src_list=[]
-    for item in urls:
-        response=requests.get(item,headers=HEADERS)
-        soup=BeautifulSoup(response.text,'lxml')
-        img=soup.findAll('img')
-        list+=img
-    print(list)
-    for content in list:
-        src=content.get('src')
-        src_list+=src
-    return src_list
+    list_src=[]
+    for url in urls:
+        response = requests.get(url, headers=HEADERS)
+        soup = BeautifulSoup(response.text, "lxml")
+        images = soup.find_all("img")
+    for item in images:
+        src=item["src"]
+        list_src.append(src)
+    print(list_src)
+    return list_src
 
+
+def download(url:str)->None:
+    if not os.path.exists("dataset"):
+        os.mkdir("dataset")
+    response=requests.get(url)
+    filename=url.split('/')[-1]
+    with open(os.path.join(filename,"wb")) as f:
+        f.write(response.content)
+    
+
+def multiprocessing(urls:list)->list:
+    with ThreadPool(processes=4) as p:
+        result=p.map(download,[(url) for url in urls])
+    p.close()
+    p.join()
+    return result
 
 if __name__=="__main__":
     num=input("Input numbers of url: ")
@@ -37,6 +46,5 @@ if __name__=="__main__":
         urls=[]
         url=input("Input url: ")
         urls.append(url)
-    list=create_list(urls)
-    with multiprocessing.Pool(processes=4) as p:
-        p.map(download,list)
+    multiprocessing(create_list(urls))
+"""

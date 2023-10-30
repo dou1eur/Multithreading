@@ -1,9 +1,9 @@
-import multiprocessing  
+from multiprocessing import Pool
 import numpy as np
 
 def sum_el(rows:int,columns:int,matrix:list)->int:
     matrix=np.array_split(matrix,rows)
-    with multiprocessing.Pool(processes=4) as p:
+    with Pool(processes=4) as p:
         result=p.map(sum,matrix)
     return sum(result)
 
